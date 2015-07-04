@@ -105,7 +105,7 @@ int main(int argc, char **argv)
     GLuint lightID = glGetUniformLocation(programID, "lightPosition");
     GLuint cameraID = glGetUniformLocation(programID, "cameraPosition");
 
-    vec4 ambientProduct = vec4(0.80, 0.80, 0.80, 1);
+    vec4 ambientProduct = vec4(1, 1, 1, 1);
     vec4 diffuseProduct = vec4(0.1, 0.1, 0.1, 1);
     vec4 specularProduct = vec4(0.1, 0.1, 0.1, 1);
     vec4 lightPosition = vec4(0, 200, 0, 1);
