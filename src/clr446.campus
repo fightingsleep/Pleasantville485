@@ -1,0 +1,21 @@
+# Give your campus scene a name
+USaskVille
+# Number of models specified
+12
+# List of models and transformations for each:
+# First entry is the name of the model (including the path, using the directory
+# this file is in as the reference)
+# The next set of entries represent the transformation:
+# Scale in x,y,z, Rotation axis in x,y,z, Rotation angle Ra, Translation from origin i.e.:
+buildings/skybox/skybox.models 50 50 50 1 0 0 0 0 0 0 0 0 0
+buildings/road/road.models 6 6 6 1 0 0 0 0 0 0 0 0 0
+buildings/EBchurch/EBchurch.models 2.5 2.5 2.5 1 0 0 0 0 0 0 -90 4.2 0
+buildings/pac/pac.models 6 6 6 1 0 0 0 0 0 0 -1 0 0.5
+buildings/tcu/tcu.models 3 3 3 1 1 0 -15 0 0 0 5 0 5
+buildings/121researchdr/121researchdr.models 1 1 1 1 0 0 0 0 0.7 0 -5 0.3 -5
+buildings/cathedral/cathedral.models 0.5 0.5 0.5 1 0 0 0 0 -2.5 0 15 0.4 -15
+buildings/assiniboine/assiniboine.models 1 1 1 1 0 0 0 0 5 15 15 0 15
+buildings/esl/esl.models 3.5 3.5 3.5 0 1 0 100 0 0 0 -20 0 -10
+buildings/greatbf/greatbf.models 0.3 0.3 0.3 0 1 0 310 0 0 0 -55 0 -70
+buildings/Luthern_Church/Luthern_Church.models 1 1 1 0 1 0 0 0 0 0 25 -0.2 -25
+buildings/louis/louis.models 3 3 3 0 1 0 90 0 0 0 0 0 17
