@@ -1,6 +1,6 @@
 //========================================================================
-// Dynamic linking test
-// Copyright (c) Camilla Berglund <elmindreda@elmindreda.org>
+// UTF-8 window title test
+// Copyright (c) Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -23,60 +23,53 @@
 //
 //========================================================================
 //
-// This test came about as the result of bug #3060461
+// This test sets a UTF-8 window title
 //
 //========================================================================
 
-#define GLFW_DLL
-#include <GL/glfw.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 
-static void GLFWCALL window_size_callback(int width, int height)
+static void error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Error: %s\n", description);
+}
+
+static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
 int main(void)
 {
-    int major, minor, rev;
-    glfwGetVersion(&major, &minor, &rev);
+    GLFWwindow* window;
 
-    if (major != GLFW_VERSION_MAJOR ||
-        minor != GLFW_VERSION_MINOR ||
-        rev != GLFW_VERSION_REVISION)
-    {
-        fprintf(stderr, "GLFW library version mismatch\n");
-        exit(EXIT_FAILURE);
-    }
+    glfwSetErrorCallback(error_callback);
 
     if (!glfwInit())
+        exit(EXIT_FAILURE);
+
+    window = glfwCreateWindow(400, 400, "English 日本語 русский язык 官話", NULL, NULL);
+    if (!window)
     {
-        fprintf(stderr, "Failed to initialize GLFW\n");
+        glfwTerminate();
         exit(EXIT_FAILURE);
     }
 
-    if (!glfwOpenWindow(0, 0, 0, 0, 0, 0, 0, 0, GLFW_WINDOW))
-    {
-        fprintf(stderr, "Failed to open GLFW window\n");
-        exit(EXIT_FAILURE);
-    }
-
-    glfwSetWindowTitle("Dynamic Linking Test");
-    glfwSetWindowSizeCallback(window_size_callback);
+    glfwMakeContextCurrent(window);
+    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
     glfwSwapInterval(1);
 
-    glClearColor(0, 0, 0, 0);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    while (glfwGetWindowParam(GLFW_OPENED))
+    while (!glfwWindowShouldClose(window))
     {
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glfwSwapBuffers();
+        glfwSwapBuffers(window);
+        glfwWaitEvents();
     }
 
     glfwTerminate();
