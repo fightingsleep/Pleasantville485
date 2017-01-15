@@ -34,6 +34,12 @@ struct Model {
     
 };
 
+bool loadAllBuildingsIntoVAOs(std::vector<Building>& buildings,
+                              GLuint** vaoIDs,
+                              GLuint **textures,
+                              std::vector<glm::mat4>& ModelMatrix,
+                              GLsizei **numVertices);
+
 bool loadBuildings(
     const char* path,
     char* out_name,

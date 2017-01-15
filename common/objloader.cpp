@@ -2,15 +2,18 @@
 #include <stdio.h>
 #include <string>
 #include <cstring>
-
+#include <GL/glew.h>
 #include <glm/glm.hpp>
-
+#include <glm/gtc/matrix_transform.hpp>
 #include "objloader.hpp"
+#include "texture.hpp"
 
+using namespace glm;
 
 // Very, VERY simple OBJ loader.
 // Here is a short list of features a real function would provide : 
-// - Binary files. Reading a model should be just a few memcpy's away, not parsing a file at runtime. In short : OBJ is not very great.
+// - Binary files. Reading a model should be just a few memcpy's away,
+// not parsing a file at runtime. In short : OBJ is not very great.
 // - Animations & bones (includes bones weights)
 // - Multiple UVs
 // - All attributes should be optional, not "forced"
@@ -36,6 +39,173 @@ bool getNextLine(FILE* file, char* line) {
             return true;
         }
     }
+}
+
+bool loadAllBuildingsIntoVAOs
+(
+ std::vector<Building>& buildings,
+ GLuint** vaoIDs,
+ GLuint **textures,
+ std::vector<mat4>& ModelMatrices,
+ GLsizei **numVertices
+)
+{
+    int numModels = buildings.size();
+    char fileName[1024];
+    GLsizei numVertexIndices[numModels];
+    *vaoIDs = new GLuint[numModels];
+    *numVertices = new GLsizei[numModels];
+    *textures = new GLuint[numModels];
+    ModelMatrices.resize(numModels);
+    
+    if(numModels < 1 || NULL == *vaoIDs ||
+       NULL == *numVertices || NULL == *textures) {
+        return false;
+    }
+    
+    glGenVertexArrays(numModels, *vaoIDs);
+    
+    for (int i  = 0; i < numModels; i++) {
+        // Read our .obj file
+        std::vector<Model> models;
+        std::vector<vec3> vertices;
+        std::vector<vec2> uvs;
+        std::vector<vec3> normals;
+        std::vector<ivec3> vertex_indices;
+        std::vector<ivec3> uv_indices;
+        std::vector<ivec3> normal_indices;
+        
+        char *tmp = (char *)malloc(256 * sizeof(char));
+        char *p1 = (char *)malloc(256 * sizeof(char));
+        char *p2 = (char *)malloc(256 * sizeof(char));
+        char *path = (char *)malloc(256 * sizeof(char));
+        strcpy(tmp, (char *)buildings[i].modelsFilename.c_str());
+        p1 = strtok(tmp, "/");
+        p2 = strtok(NULL, "/");
+        strcpy(path,p1);
+        strcat(path,"/");
+        strcat(path, p2);
+        
+        loadModels((char *)buildings[i].modelsFilename.c_str(), models);
+        
+        sprintf(fileName, "%s/%s.obj", path, p2);
+        bool loadSuccess = loadOBJ(fileName, vertices, uvs, normals);
+        if (!loadSuccess) {
+            return false;
+        }
+        
+        // need to keep track of vbo sizes for drawing later
+        (*numVertices)[i] = vertices.size();
+        numVertexIndices[i] = vertex_indices.size();
+        
+        ModelMatrices[i] = mat4(1.0f);
+        ModelMatrices[i] = scale(ModelMatrices[i],
+                               vec3(models[0].sx, models[0].sy, models[0].sz)
+                               );
+        ModelMatrices[i] = rotate(ModelMatrices[i],
+                                models[0].ra,
+                                vec3(models[0].rx, models[0].ry, models[0].rz)
+                                );
+        ModelMatrices[i] = translate(ModelMatrices[i],
+                                   vec3(models[0].tx,
+                                        models[0].ty,
+                                        models[0].tz)
+                                   );
+        
+        ModelMatrices[i] = scale(ModelMatrices[i],
+                               vec3(buildings[i].sx,
+                                    buildings[i].sy,
+                                    buildings[i].sz)
+                               );
+        ModelMatrices[i] = rotate(ModelMatrices[i],
+                                buildings[i].ra,
+                                vec3(buildings[i].rx,
+                                     buildings[i].ry,
+                                     buildings[i].rz)
+                                );
+        ModelMatrices[i] = translate(ModelMatrices[i],
+                                   vec3(buildings[i].ox,
+                                        buildings[i].oy,
+                                        buildings[i].oz)
+                                   );
+        ModelMatrices[i] = translate(ModelMatrices[i],
+                                   vec3(buildings[i].tx,
+                                        buildings[i].ty,
+                                        buildings[i].tz)
+                                   );
+        
+        // Load vertices into a VBO
+        GLuint vertexbuffer;
+        glGenBuffers(1, &vertexbuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glBufferData(GL_ARRAY_BUFFER,
+                     (*numVertices)[i] * sizeof(vec3),
+                     &vertices[0],
+                     GL_STATIC_DRAW);
+        
+        // Load normals into a VBO
+        GLuint normalsbuffer;
+        glGenBuffers(1, &normalsbuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, normalsbuffer);
+        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(vec3), &normals[0], GL_STATIC_DRAW);
+        
+        // Load texture coords into a VBO
+        GLuint uvbuffer;
+        glGenBuffers(1, &uvbuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+        glBufferData(GL_ARRAY_BUFFER, uvs.size() * sizeof(vec2), &uvs[0], GL_STATIC_DRAW);
+        
+        // bind VAO in order to save attribute state
+        glBindVertexArray((*vaoIDs)[i]);
+        
+        sprintf(fileName, "%s/%s.bmp", path, p2);
+        
+        GLuint t = loadBMP_custom(fileName);
+        (*textures)[i] = t;
+        
+        // 1st attribute buffer : vertices
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glVertexAttribPointer(
+                              0,                  // attribute. No particular reason for 0, but must match the layout in the shader.
+                              3,                  // size
+                              GL_FLOAT,           // type
+                              GL_FALSE,           // normalized?
+                              0,                  // stride
+                              (void*)0            // array buffer offset
+                              );
+        
+        // 2nd attribute buffer : normals
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, normalsbuffer);
+        glVertexAttribPointer(
+                              1,                  // attribute. No particular reason for 1, but must match the layout in the shader.
+                              3,                  // size
+                              GL_FLOAT,           // type
+                              GL_FALSE,           // normalized?
+                              0,                  // stride
+                              (void*)0            // array buffer offset
+                              );
+        
+        // 3rd attribute buffer : uvs
+        glEnableVertexAttribArray(2);
+        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+        glVertexAttribPointer(
+                              2,                  // attribute. No particular reason for 2, but must match the layout in the shader.
+                              2,                  // size
+                              GL_FLOAT,           // type
+                              GL_FALSE,           // normalized?
+                              0,                  // stride
+                              (void*)0            // array buffer offset
+                              );
+        
+        /**********************************/
+        /*** UNBIND VERTEX-ARRAY OBJECT ***/
+        /**********************************/
+        glBindVertexArray(0);
+    }
+
+    return true;
 }
 
 bool loadBuildings(const char* path, char* out_name, std::vector<Building>& out_buildings) {
