@@ -1,11 +1,7 @@
 //========================================================================
-// GLFW - An OpenGL framework
-// Platform:    Win32/WGL
-// API version: 2.7
-// WWW:         http://www.glfw.org/
+// GLFW 3.2 Linux - www.glfw.org
 //------------------------------------------------------------------------
-// Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2014 Jonas Ådahl <jadahl@gmail.com>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -28,22 +24,10 @@
 //
 //========================================================================
 
-#include "internal.h"
+#ifndef _glfw3_xkb_unicode_h_
+#define _glfw3_xkb_unicode_h_
 
 
-#if defined(GLFW_BUILD_DLL)
+long _glfwKeySym2Unicode(unsigned int keysym);
 
-//========================================================================
-// GLFW DLL entry point
-//========================================================================
-
-BOOL WINAPI DllMain( HINSTANCE instance, DWORD reason, LPVOID reserved )
-{
-    // NOTE: Some compilers complains about instance and x never being used -
-    // never mind that (we don't want to use them)!
-
-    return TRUE;
-}
-
-#endif // GLFW_BUILD_DLL
-
+#endif // _glfw3_xkb_unicode_h_

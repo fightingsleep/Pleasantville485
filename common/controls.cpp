@@ -1,129 +1,238 @@
-// Include GLFW
+#include <GL/glew.h>
 #include <glfw3.h>
-extern GLFWwindow* window; // The "extern" keyword here is to access the variable "window" declared in tutorialXXX.cpp. This is a hack to keep the tutorials simple. Please avoid this.
-
-// Include GLM
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdio.h>
-using namespace glm;
-
+#include "init.hpp"
 #include "controls.hpp"
+#include "window.hpp"
 
-glm::mat4 ViewMatrix;
-glm::mat4 ProjectionMatrix;
+bool renderDepthTexture = false;
 
-glm::mat4 getViewMatrix(){
-	return ViewMatrix;
+// Camera vectors
+glm::vec3 position = glm::vec3(0, 0, -1);
+glm::vec3 direction = glm::vec3(0, 0, 0.01);
+glm::vec3 right = glm::vec3(-1, 0, 0);
+glm::vec3 up = glm::cross(right, direction);
+
+// Transform matrices
+glm::mat4 ViewMatrix = glm::lookAt(
+                                   // Camera is here
+                                   position,
+                                   // Camera looks here
+                                   position + direction,
+                                   // Vector pointing up from camera
+                                   up
+                                   );
+glm::mat4 ProjectionMatrix = glm::perspective(45.0f,
+                                              16.0f / 9.0f,
+                                              0.1f,
+                                              1000.0f);
+
+
+glm::mat4 getViewMatrix()
+{
+    return ViewMatrix;
 }
-glm::mat4 getProjectionMatrix(){
-	return ProjectionMatrix;
-}
 
-// Initial distance between eye and center :
-static float radius = 3;
-
-// Initial positions and directions of view :
-glm::vec4 center = glm::vec4( 0, 0, 0, 1);
-glm::vec4 direction = glm::vec4( 0, 0, -1, 0);
-glm::vec4 right = glm::vec4( 1, 0, 0, 0);
-glm::vec4 up = glm::vec4( 0, 1, 0, 0 );
-
-glm::vec4 getCurrCameraPosition(){
-        return center;
+glm::mat4 getProjectionMatrix()
+{
+    return ProjectionMatrix;
 }
 
 // Mouse info
 double xpos, ypos;
-float dx, dy;
-bool rotating = false;
-bool translating = false;
+double mouseSpeed = 0.0015f;
 
-float translationSpeed = 0.005f;
-float rotationSpeed = 0.2f;
-float zoomSpeed = 0.01f;
+// Camera movement speed (units / second)
+float speed = 4.0f;
+
+// Camera angles
+double horizontalAngle = 0.0f;
+double verticalAngle = 0.0f;
+
+const float pi = 3.14;
+bool godMode = false;
+bool jumping = false;
+bool falling = false;
+bool hanging = false;
+
+bool keys[1024];
 
 void updateView() {
-    glm::vec3 camPos = glm::vec3(center-radius*direction);
-    printf("\n\ncurrEye = glm::vec3(%f, %f, %f);\n", camPos.x, camPos.y, camPos.z);
-    printf("currDir = glm::vec3(%f, %f, %f);\n", direction.x, direction.y, direction.z);
-    printf("currUp = glm::vec3(%f, %f, %f);\n\n", up.x, up.y, up.z);
     ViewMatrix = glm::lookAt(
-                             glm::vec3(center-radius*direction),           // Camera is here
-                             glm::vec3(center), // and looks here : at the same position, plus "direction"
-                             glm::vec3(up)                  // Head is up (set to 0,-1,0 to look upside-down)
+                             // Camera is here
+                             position,
+                             // Camera looks here
+                             position + direction,
+                             // Vector pointing up from camera
+                             up
                              );
 }
 
-void MouseDraggedCallback(GLFWwindow*, double x, double y)
+void processUserInput()
 {
-    dx = x - xpos; // x cursor increases from left to right
-    dy = ypos - y; // y cursor increases from top to bottom
-    
-    if (rotating)
-    {
-//        printf ("rotate: dx = %f, dy = %f\n", dx, dy);
+    static double lastTime = glfwGetTime();
+    // Compute time difference between current and last frame
+    double currentTime = glfwGetTime();
+    double deltaTime = double(currentTime - lastTime);
+    static int counter = 0;
 
-        glm::mat4 Rtilt = glm::rotate(glm::mat4(1.0f), rotationSpeed * dy, glm::vec3(right));
-        direction = Rtilt * direction;
-        up = Rtilt * up;
 
-        glm::mat4 Rpan = glm::rotate(glm::mat4(1.0f), rotationSpeed * -dx, glm::vec3(up));
-        direction = Rpan * direction;
-        right = Rpan * right;
-
-        updateView();
+    // Move forward
+    if (keys[GLFW_KEY_W]){
+        position += direction * float(deltaTime) * speed;
     }
-    
-    if (translating)
-    {
-//        printf ("translate: dx = %f, dy = %f\n", dx, dy);
-        
-        center -= dx * translationSpeed * right;
-        center -= dy * translationSpeed * up;
-        updateView();
+    // Move backward
+    if (keys[GLFW_KEY_S]){
+        position -= direction * float(deltaTime) * speed;
     }
-    
-    xpos = x;
-    ypos = y;
-}
+    // Strafe right
+    if (keys[GLFW_KEY_D]){
+        position += right * float(deltaTime) * speed;
+    }
+    // Strafe left
+    if (keys[GLFW_KEY_A]){
+        position -= right * float(deltaTime) * speed;
+    }
 
 
-void MouseScrollCallback(GLFWwindow*, double dx, double dy)
-{
-    radius += zoomSpeed * radius * dy;
+    if (!godMode && !jumping && !falling && !hanging) {
+        // Keep the camera on the x-z plane
+        position = glm::vec3(position.x, 0, position.z);
+    }
+
+    if (jumping) {
+        if (position.y >= 7.0) {
+            jumping = false;
+            hanging = true;
+        } else if (position.y >= 5.0) {
+            position = glm::vec3(position.x, position.y + 0.08, position.z);
+        } else {
+            position = glm::vec3(position.x, position.y + 0.1, position.z);
+        }
+    }
+
+    if (hanging) {
+        if (counter > 5) {
+            hanging = false;
+            falling = true;
+            counter = 0;
+        } else {
+            counter++;
+        }
+    }
+
+    if (falling) {
+        position = glm::vec3(position.x, position.y - 0.1, position.z);
+        if(position.y <= 0.0) {
+            position = glm::vec3(position.x, 0.0, position.z);
+            falling = false;
+        }
+    }
+
+    // Update the View matrix
     updateView();
+
+//    DEBUG PRINTING
+//    printf("xpos: %f, ypos: %f\n", xpos, ypos);
+//    printf("horizontalAngle: %f, verticalAngle: %f\n",
+//           horizontalAngle, verticalAngle);
+//
+//
+//    printf("double(xpos - lastXPos) = %f\n", double(xpos - lastXPos));
+//    printf("double(lastYPos - ypos) = %f\n", double(lastYPos - ypos));
+//
+//    printf("mouseSpeed * double(xpos - lastXPos) = %f\n", mouseSpeed * double(xpos - lastXPos));
+//    printf("mouseSpeed * double(lastYPos - ypos) = %f\n", mouseSpeed * double(lastYPos - ypos));
+//
+//    printf("\n\ndirection:(%f,%f,%f)\n,right:(%f,%f,%f)\n\n",
+//           direction.x, direction.y, direction.z,
+//           right.x, right.y, right.z);
+
+    lastTime = currentTime;
 }
 
-void MousePressCallback(GLFWwindow*, int button, int action, int mods)
+void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
+    if (key >= 0 && key < 1024)
+    {
+        if (action == GLFW_PRESS)
+            keys[key] = true;
+        else if (action == GLFW_RELEASE)
+            keys[key] = false;
+    }
+
+    // Toggle godMode
+    if (action == GLFW_PRESS && key == GLFW_KEY_G){
+        godMode = !godMode;
+    }
+    // Toggle depth texture debug rendering
+    if (action == GLFW_PRESS && key == GLFW_KEY_APOSTROPHE){
+        renderDepthTexture = !renderDepthTexture;
+    }
+    if (action == GLFW_PRESS && key == GLFW_KEY_SPACE){
+        jumping = true;
+    }
+}
+
+void mouseMovementCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    static double lastXPos, lastYPos;
+    static bool firstTime = true;
+
+    // Get mouse position
     glfwGetCursorPos(window, &xpos, &ypos);
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    {
-        rotating = true;
-    }
-    else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    {
-        translating = true;
+
+    if (firstTime) {
+        lastXPos = xpos;
+        lastYPos = ypos;
+        firstTime = false;
     }
 
-    if (action == GLFW_RELEASE)
-    {
-        rotating = false;
-        translating = false;
+
+    // Compute new orientation
+    horizontalAngle += mouseSpeed * double(lastXPos - xpos);
+    verticalAngle   += mouseSpeed * double(lastYPos - ypos);
+
+
+    if (!godMode) {
+        // Limit how far the camera can look up and down
+        if (verticalAngle > pi/2) {
+            verticalAngle = pi/2;
+        } else if (verticalAngle < -pi/5) {
+            verticalAngle = -pi/5;
+        }
     }
+
+
+    // Direction : Spherical coordinates to Cartesian coordinates conversion
+    direction = glm::vec3(
+                          cos(verticalAngle) * sin(horizontalAngle),
+                          sin(verticalAngle),
+                          cos(verticalAngle) * cos(horizontalAngle)
+                          );
+
+    // Right vector
+    right = glm::vec3(
+                      sin(horizontalAngle - pi/2.0f),
+                      0,
+                      cos(horizontalAngle - pi/2.0f)
+                      );
+
+
+    // Up vector
+    up = glm::cross(right, direction);
+
+    lastXPos = xpos;
+    lastYPos = ypos;
+
+    updateView();
 }
 
-void initializeControls() {
-    
-    // Setup callback functions
-    glfwSetScrollCallback(window, MouseScrollCallback);
-    glfwSetMouseButtonCallback(window, MousePressCallback);
-    glfwSetCursorPosCallback(window, MouseDraggedCallback);
-    
-    // Initialize View and Project matrices
-    ProjectionMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 200.0f);
-    updateView();
-    
+void initCallbacks()
+{
+    glfwSetKeyCallback(window, keyPressCallback);
+    glfwSetCursorPosCallback(window, mouseMovementCallback);
 }
 

@@ -1,12 +1,8 @@
 //========================================================================
-// GLFW - An OpenGL framework
-// Platform:    Carbon/AGL/CGL
-// API Version: 2.7
-// WWW:         http://www.glfw.org/
+// GLFW 3.2 POSIX - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2003      Keith Bauer
-// Copyright (c) 2003-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2016 Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -29,28 +25,25 @@
 //
 //========================================================================
 
+#ifndef _glfw3_posix_tls_h_
+#define _glfw3_posix_tls_h_
 
-//************************************************************************
-//****               Platform implementation functions                ****
-//************************************************************************
+#include <pthread.h>
 
-//========================================================================
-// Enable system keys
-//========================================================================
+#define _GLFW_PLATFORM_LIBRARY_TLS_STATE _GLFWtlsPOSIX posix_tls
 
-void _glfwPlatformEnableSystemKeys( void )
+
+// POSIX-specific global TLS data
+//
+typedef struct _GLFWtlsPOSIX
 {
-    // Nothing to do; event handling code checks the status of
-    // _glfwWin.sysKeysDisabled to ensure this behavior.
-}
+    GLFWbool        allocated;
+    pthread_key_t   context;
 
-//========================================================================
-// Disable system keys
-//========================================================================
+} _GLFWtlsPOSIX;
 
-void _glfwPlatformDisableSystemKeys( void )
-{
-    // Nothing to do; event handling code checks the status of
-    // _glfwWin.sysKeysDisabled to ensure this behavior.
-}
 
+GLFWbool _glfwInitThreadLocalStoragePOSIX(void);
+void _glfwTerminateThreadLocalStoragePOSIX(void);
+
+#endif // _glfw3_posix_tls_h_

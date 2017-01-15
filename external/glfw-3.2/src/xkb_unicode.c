@@ -1,11 +1,8 @@
 //========================================================================
-// GLFW - An OpenGL framework
-// Platform:    X11/GLX
-// API version: 2.7
-// WWW:         http://www.glfw.org/
+// GLFW 3.2 X11 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
-// Copyright (c) 2006-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2006-2016 Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -67,7 +64,7 @@
 //****                KeySym to Unicode mapping table                 ****
 //************************************************************************
 
-static struct codepair {
+static const struct codepair {
   unsigned short keysym;
   unsigned short ucs;
 } keysymtab[] = {
@@ -830,72 +827,63 @@ static struct codepair {
   { 0x13be, 0x0178 },
   { 0x20ac, 0x20ac },
   // Numeric keypad with numlock on
-  { XK_KP_Space, ' ' },
-  { XK_KP_Equal, '=' },
-  { XK_KP_Multiply, '*' },
-  { XK_KP_Add, '+' },
-  { XK_KP_Separator, ',' },
-  { XK_KP_Subtract, '-' },
-  { XK_KP_Decimal, '.' },
-  { XK_KP_Divide, '/' },
-  { XK_KP_0, 0x0030 },
-  { XK_KP_1, 0x0031 },
-  { XK_KP_2, 0x0032 },
-  { XK_KP_3, 0x0033 },
-  { XK_KP_4, 0x0034 },
-  { XK_KP_5, 0x0035 },
-  { XK_KP_6, 0x0036 },
-  { XK_KP_7, 0x0037 },
-  { XK_KP_8, 0x0038 },
-  { XK_KP_9, 0x0039 }
+  { 0xff80 /*XKB_KEY_KP_Space*/,     ' ' },
+  { 0xffbd /*XKB_KEY_KP_Equal*/,     '=' },
+  { 0xffaa /*XKB_KEY_KP_Multiply*/,  '*' },
+  { 0xffab /*XKB_KEY_KP_Add*/,       '+' },
+  { 0xffac /*XKB_KEY_KP_Separator*/, ',' },
+  { 0xffad /*XKB_KEY_KP_Subtract*/,  '-' },
+  { 0xffae /*XKB_KEY_KP_Decimal*/,   '.' },
+  { 0xffaf /*XKB_KEY_KP_Divide*/,    '/' },
+  { 0xffb0 /*XKB_KEY_KP_0*/, 0x0030 },
+  { 0xffb1 /*XKB_KEY_KP_1*/, 0x0031 },
+  { 0xffb2 /*XKB_KEY_KP_2*/, 0x0032 },
+  { 0xffb3 /*XKB_KEY_KP_3*/, 0x0033 },
+  { 0xffb4 /*XKB_KEY_KP_4*/, 0x0034 },
+  { 0xffb5 /*XKB_KEY_KP_5*/, 0x0035 },
+  { 0xffb6 /*XKB_KEY_KP_6*/, 0x0036 },
+  { 0xffb7 /*XKB_KEY_KP_7*/, 0x0037 },
+  { 0xffb8 /*XKB_KEY_KP_8*/, 0x0038 },
+  { 0xffb9 /*XKB_KEY_KP_9*/, 0x0039 }
 };
 
 
-//************************************************************************
-//****                  GLFW internal functions                       ****
-//************************************************************************
+//////////////////////////////////////////////////////////////////////////
+//////                       GLFW internal API                      //////
+//////////////////////////////////////////////////////////////////////////
 
-//========================================================================
-// Convert X11 KeySym to Unicode
-//========================================================================
-
-long _glfwKeySym2Unicode( KeySym keysym )
+// Convert XKB KeySym to Unicode
+//
+long _glfwKeySym2Unicode(unsigned int keysym)
 {
     int min = 0;
     int max = sizeof(keysymtab) / sizeof(struct codepair) - 1;
     int mid;
 
-    /* First check for Latin-1 characters (1:1 mapping) */
-    if( (keysym >= 0x0020 && keysym <= 0x007e) ||
-        (keysym >= 0x00a0 && keysym <= 0x00ff) )
-    { return keysym;
-    }
-
-    /* Also check for directly encoded 24-bit UCS characters */
-    if( (keysym & 0xff000000) == 0x01000000 )
+    // First check for Latin-1 characters (1:1 mapping)
+    if ((keysym >= 0x0020 && keysym <= 0x007e) ||
+        (keysym >= 0x00a0 && keysym <= 0x00ff))
     {
-        return keysym & 0x00ffffff;
+        return keysym;
     }
 
-    /* Binary search in table */
-    while( max >= min )
+    // Also check for directly encoded 24-bit UCS characters
+    if ((keysym & 0xff000000) == 0x01000000)
+        return keysym & 0x00ffffff;
+
+    // Binary search in table
+    while (max >= min)
     {
         mid = (min + max) / 2;
-        if( keysymtab[mid].keysym < keysym )
-        {
+        if (keysymtab[mid].keysym < keysym)
             min = mid + 1;
-        }
-        else if( keysymtab[mid].keysym > keysym )
-        {
+        else if (keysymtab[mid].keysym > keysym)
             max = mid - 1;
-        }
         else
-        {
-            /* Found it! */
             return keysymtab[mid].ucs;
-        }
     }
 
-    /* No matching Unicode value found */
+    // No matching Unicode value found
     return -1;
 }
+

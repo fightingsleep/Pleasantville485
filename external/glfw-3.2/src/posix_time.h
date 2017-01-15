@@ -1,10 +1,8 @@
 //========================================================================
-// GLFW - An OpenGL framework
-// Platform:    Cocoa/NSOpenGL
-// API Version: 2.7
-// WWW:         http://www.glfw.org/
+// GLFW 3.2 POSIX - www.glfw.org
 //------------------------------------------------------------------------
-// Copyright (c) 2009-2010 Camilla Berglund <elmindreda@elmindreda.org>
+// Copyright (c) 2002-2006 Marcus Geelnard
+// Copyright (c) 2006-2016 Camilla Berglund <elmindreda@glfw.org>
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -27,25 +25,24 @@
 //
 //========================================================================
 
-#include "internal.h"
+#ifndef _glfw3_posix_time_h_
+#define _glfw3_posix_time_h_
 
-//************************************************************************
-//****               Platform implementation functions                ****
-//************************************************************************
+#define _GLFW_PLATFORM_LIBRARY_TIME_STATE _GLFWtimePOSIX posix_time
 
-//========================================================================
-// Enable and disable system keys
-//========================================================================
+#include <stdint.h>
 
-void _glfwPlatformEnableSystemKeys( void )
+
+// POSIX-specific global timer data
+//
+typedef struct _GLFWtimePOSIX
 {
-    // This is checked in macosx_window.m; we take no action here
-}
+    GLFWbool    monotonic;
+    uint64_t    frequency;
 
-void _glfwPlatformDisableSystemKeys( void )
-{
-    // This is checked in macosx_window.m; we take no action here
-    // I don't think it's really possible to disable stuff like Exposé
-    // except in full-screen mode.
-}
+} _GLFWtimePOSIX;
 
+
+void _glfwInitTimerPOSIX(void);
+
+#endif // _glfw3_posix_time_h_
