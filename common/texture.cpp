@@ -81,6 +81,8 @@ GLuint loadBMP_custom(const char * imagepath){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); 
 	glGenerateMipmap(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Return the ID of the texture we just created
 	return textureID;
@@ -157,7 +159,6 @@ GLuint loadDDS(const char * imagepath){
 	/* close the file pointer */ 
 	fclose(fp);
 
-	unsigned int components  = (fourCC == FOURCC_DXT1) ? 3 : 4; 
 	unsigned int format;
 	switch(fourCC) 
 	{ 
