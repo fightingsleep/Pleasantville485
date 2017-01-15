@@ -32,16 +32,21 @@ endif(INCLUDE_DISTRIB)
 
 
 include_directories(
-	external/glfw-3.0.3/include/GLFW/
+	external/glfw-3.2/include/GLFW/
 	external/glm-0.9.4.0/
 	external/glew-1.9.0/include/
+	external/libSOIL-master/
+	common/
 	.
 )
 
+find_library(SOIL_LIBRARY libsoil.a HINTS /Users/Chris/Desktop/Pleasantville485/external/libSOIL-master/)
+
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
-	GLFW_303
+	glfw
 	GLEW_190
+	${SOIL_LIBRARY}
 )
 
 add_definitions(
@@ -62,19 +67,49 @@ add_executable(part6
 	common/objloader.hpp
 	common/texture.cpp
 	common/texture.hpp
+	common/cubicSpline.cpp
+	common/cubicSpline.hpp
+	common/init.cpp
+	common/init.hpp
+	common/objloader.cpp
+	common/objloader.hpp
+	common/physicsEngine.cpp
+	common/physicsEngine.hpp
+	common/physicsEntity.cpp
+	common/physicsEntity.hpp
+	common/quaternion_utils.cpp
+	common/quaternion_utils.hpp
+	common/render.cpp
+	common/render.hpp
+	common/tangentspace.cpp
+	common/tangentspace.hpp
+	common/vboindexer.cpp
+	common/vboindexer.hpp
+	common/window.cpp
+	common/window.hpp
+	common/debug.cpp
+	common/debug.hpp
 	
-	src/TransformVertexShader.vertexshader
-	src/ColorFragmentShader.fragmentshader
+	src/ShadowMapping.vertexshader
+	src/ShadowMapping.fragmentshader
+	src/DepthTest.fragmentshader
+	src/DepthTest.vertexshader
+	src/SimpleTexture.fragmentshader
+	src/Passthrough.vertexshader
+	src/skybox.frag
+	src/skybox.vs
 )
+
 target_link_libraries(part6
 	${ALL_LIBS}
 )
+
 # Xcode and Visual working directories
 set_target_properties(part6 PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 create_target_launcher(part6 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
 SOURCE_GROUP(common REGULAR_EXPRESSION ".*/common/.*" )
-SOURCE_GROUP(shaders REGULAR_EXPRESSION ".*/.*shader$" )
+SOURCE_GROUP(shaders REGULAR_EXPRESSION “.*/.*shader$” )
 
 
 if (NOT ${CMAKE_GENERATOR} MATCHES "Xcode" )
