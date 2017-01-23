@@ -1,6 +1,8 @@
 #ifndef CONTROLS_HPP
 #define CONTROLS_HPP
 
+#define GROUND_Y_VALUE 0.3
+
 extern bool renderDepthTexture;
 
 void processUserInput();

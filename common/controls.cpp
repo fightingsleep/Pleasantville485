@@ -10,7 +10,7 @@
 bool renderDepthTexture = false;
 
 // Camera vectors
-glm::vec3 position = glm::vec3(0, 0, -1);
+glm::vec3 position = glm::vec3(0, GROUND_Y_VALUE, -1);
 glm::vec3 direction = glm::vec3(0, 0, 0.01);
 glm::vec3 right = glm::vec3(-1, 0, 0);
 glm::vec3 up = glm::cross(right, direction);
@@ -45,7 +45,7 @@ double xpos, ypos;
 double mouseSpeed = 0.0015f;
 
 // Camera movement speed (units / second)
-float speed = 4.0f;
+float speed = 25.0f;
 
 // Camera angles
 double horizontalAngle = 0.0f;
@@ -99,13 +99,14 @@ void processUserInput()
 
     if (!godMode && !jumping && !falling && !hanging) {
         // Keep the camera on the x-z plane
-        position = glm::vec3(position.x, 0, position.z);
+        position = glm::vec3(position.x, GROUND_Y_VALUE, position.z);
     }
 
     if (jumping) {
         if (position.y >= 7.0) {
             jumping = false;
             hanging = true;
+            counter = 0;
         } else if (position.y >= 5.0) {
             position = glm::vec3(position.x, position.y + 0.08, position.z);
         } else {
@@ -125,8 +126,8 @@ void processUserInput()
 
     if (falling) {
         position = glm::vec3(position.x, position.y - 0.1, position.z);
-        if(position.y <= 0.0) {
-            position = glm::vec3(position.x, 0.0, position.z);
+        if(position.y <= GROUND_Y_VALUE) {
+            position = glm::vec3(position.x, GROUND_Y_VALUE, position.z);
             falling = false;
         }
     }
@@ -172,7 +173,9 @@ void keyPressCallback(GLFWwindow* window, int key, int scancode, int action, int
         renderDepthTexture = !renderDepthTexture;
     }
     if (action == GLFW_PRESS && key == GLFW_KEY_SPACE){
-        jumping = true;
+        if (!falling && !hanging && !godMode) {
+            jumping = true;
+        }
     }
 }
 

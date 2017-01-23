@@ -8,14 +8,14 @@ USaskVille
 # The next set of entries represent the transformation:
 # Scale in x,y,z, Rotation axis in x,y,z, Rotation angle Ra, Translation from origin i.e.:
 # buildings/skybox/skybox.models 500 500 500 1 0 0 0 0 0 0 0 0 0
-buildings/road/road.models 5 5 5 1 0 0 0 0 -0.02 0 0 0 0
-buildings/EBchurch/EBchurch.models 2.5 2.5 2.5 1 0 0 0 0 0 0 -90 4.2 0
-buildings/pac/pac.models 6 6 6 1 0 0 0 0 0 0 -1 0 0.5
-buildings/tcu/tcu.models 3 3 3 1 1 0 -15 0 0 0 5 0 5
-buildings/121researchdr/121researchdr.models 1 1 1 1 0 0 0 0 0.7 0 -5 0.3 -5
-buildings/cathedral/cathedral.models 0.5 0.5 0.5 1 0 0 0 0 -2.5 0 15 0.4 -15
-buildings/assiniboine/assiniboine.models 1 1 1 1 0 0 0 0 5 15 15 0 15
-buildings/esl/esl.models 3.5 3.5 3.5 0 1 0 100 0 0 0 -20 0 -10
-buildings/greatbf/greatbf.models 0.3 0.3 0.3 0 1 0 310 0 0 0 -55 0 -70
-buildings/Luthern_Church/Luthern_Church.models 1 1 1 0 1 0 0 0 0 0 25 -0.2 -25
-buildings/louis/louis.models 3 3 3 0 1 0 90 0 0 0 0 0 17
+buildings/road/road.models 500 1 500 1 0 0 0 0 -0.02 0 0 0 0
+buildings/EBchurch/EBchurch.models 25 25 25 1 0 0 0 0 0 0 -90 4.2 0
+buildings/pac/pac.models 60 60 60 1 0 0 0 0 0 0 -1 0 0.5
+buildings/tcu/tcu.models 30 30 30 1 1 0 -15 0 0 0 5 0 5
+buildings/121researchdr/121researchdr.models 10 10 10 1 0 0 0 0 0.7 0 -5 0.3 -5
+buildings/cathedral/cathedral.models 5 5 5 1 0 0 0 0 -2.5 0 15 0.4 -15
+buildings/assiniboine/assiniboine.models 10 10 10 1 0 0 0 0 5 15 15 -4.5 15
+buildings/esl/esl.models 35 35 35 0 1 0 100 0 0 0 -20 1.21 -10
+buildings/greatbf/greatbf.models 3 3 3 0 1 0 310 0 0 0 -55 0 -70
+buildings/Luthern_Church/Luthern_Church.models 10 10 10 0 1 0 0 0 0 0 25 -0.2 -25
+buildings/louis/louis.models 30 30 30 0 1 0 90 0 0 0 0 0 17

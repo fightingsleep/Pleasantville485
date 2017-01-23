@@ -124,12 +124,13 @@ int main(int argc, char **argv)
     );
 
     // Set the position of the sun
-    glm::vec3 lightInvDir = glm::vec3(-7, 10, -10);
+    glm::vec3 lightInvDir = glm::vec3(-7, 8, -10);
     glUniform3f(lightInvDirID, lightInvDir.x, lightInvDir.y, lightInvDir.z);
 
     // Compute the MVP matrix from the light's point of view
-    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-60, 60, -60,
-                                                        60, -50, 100);
+    glm::mat4 depthProjectionMatrix = glm::ortho<float>(-500, 500,
+                                                        -500, 500,
+                                                        -500, 500);
     glm::mat4 depthModelMatrix = glm::mat4(1.0);
 
     initSkybox();
@@ -141,9 +142,12 @@ int main(int argc, char **argv)
         
         glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir,
                                                 glm::vec3(0,0,0),
-                                                glm::cross(glm::vec3(0,0,1),
-                                                           glm::vec3(
-                                                               -lightInvDir)));
+                                                glm::cross(
+                                                           glm::vec3(lightInvDir),
+                                                           glm::cross(glm::vec3(0,1,0), glm::vec3(lightInvDir))
+                                                           )
+                                                );
+        
         glm::mat4 depthMVP = depthProjectionMatrix *
         depthViewMatrix *
         depthModelMatrix;
@@ -217,12 +221,11 @@ int main(int argc, char **argv)
             glBindVertexArray(0);
         }
 
+        renderSkybox(V, P);
+        
         if (renderDepthTexture) {
             renderDepthBufferToScreen(depthTexture);
         }
-
-        renderSkybox(V, P);
-
 
         // Swap buffers
         glfwSwapBuffers(window);
