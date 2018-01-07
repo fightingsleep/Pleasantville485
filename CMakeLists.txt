@@ -40,7 +40,7 @@ include_directories(
 	.
 )
 
-find_library(SOIL_LIBRARY libsoil.a HINTS ${CMAKE_CURRENT_SOURCE_DIR}/external/libSOIL-master/)
+find_library(SOIL_LIBRARY libSOIL.a HINTS ${CMAKE_CURRENT_SOURCE_DIR}/external/libSOIL-master/)
 
 set(ALL_LIBS
 	${OPENGL_LIBRARY}

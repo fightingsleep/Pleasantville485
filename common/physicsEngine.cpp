@@ -7,7 +7,7 @@
 //
 
 #include "physicsEngine.hpp"
-#include "PhysicsEntity.hpp"
+#include "physicsEntity.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/glm.hpp>
 #include <vector>
